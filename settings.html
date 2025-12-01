@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - LaundryFlow</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Core Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    
+    <!-- Custom Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-navy: #1a365d;
+            --success-green: #38a169;
+            --warning-amber: #d69e2e;
+            --info-blue: #3182ce;
+            --neutral-gray: #718096;
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            min-height: 100vh;
+        }
+        
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        .hero-bg {
+            background: linear-gradient(135deg, var(--primary-navy) 0%, #2d3748 50%, var(--primary-navy) 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .settings-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+        }
+        
+        .settings-card:hover {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary {
+            background: var(--primary-navy);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(26, 54, 93, 0.3);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: var(--primary-navy);
+            border: 2px solid var(--primary-navy);
+            padding: 10px 22px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: var(--primary-navy);
+            color: white;
+            transform: scale(1.02);
+        }
+        
+        .sidebar-item {
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 4px;
+        }
+        
+        .sidebar-item:hover {
+            background: #f7fafc;
+        }
+        
+        .sidebar-item.active {
+            background: var(--primary-navy);
+            color: white;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--primary-navy);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-2xl font-bold text-gray-900">LaundryFlow</h1>
+                    </div>
+                    <div class="hidden md:block ml-10">
+                        <div class="flex items-baseline space-x-4">
+                            <a href="index.html" class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
+                            <a href="analytics.html" class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Analytics</a>
+                            <a href="customers.html" class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Customers</a>
+                            <a href="settings.html" class="text-gray-900 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-blue-600">Settings</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="btn-secondary text-sm" onclick="resetSettings()">Reset to Default</button>
+                    <button class="btn-primary text-sm" onclick="saveSettings()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero-bg py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl font-bold text-white mb-4">System Settings</h1>
+            <p class="text-xl text-gray-200">Configure your laundry management system</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            
+            <!-- Settings Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-sm p-4 sticky top-24">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Settings Categories</h3>
+                    <div class="sidebar-item active" onclick="showSection('business')">
+                        <i class="fas fa-building mr-2"></i>Business Information
+                    </div>
+                    <div class="sidebar-item" onclick="showSection('services')">
+                        <i class="fas fa-concierge-bell mr-2"></i>Services & Pricing
+                    </div>
+                    <div class="sidebar-item" onclick="showSection('notifications')">
+                        <i class="fas fa-bell mr-2"></i>Notifications
+                    </div>
+                    <div class="sidebar-item" onclick="showSection('users')">
+                        <i class="fas fa-users mr-2"></i>User Management
+                    </div>
+                    <div class="sidebar-item" onclick="showSection('backup')">
+                        <i class="fas fa-database mr-2"></i>Backup & Export
+                    </div>
+                    <div class="sidebar-item" onclick="showSection('system')">
+                        <i class="fas fa-cog mr-2"></i>System Preferences
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Settings Content -->
+            <div class="lg:col-span-3">
+                
+                <!-- Business Information Section -->
+                <div id="business-section" class="settings-section">
+                    <div class="settings-card">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-6">Business Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Business Name *</label>
+                                <input type="text" id="businessName" value="LaundryFlow" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Business Type</label>
+                                <select id="businessType" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="laundromat">Laundromat</option>
+                                    <option value="dry-cleaner">Dry Cleaner</option>
+                                    <option value="wash-fold">Wash & Fold Service</option>
+                                    <option value="commercial">Commercial Laundry</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
+                                <input type="tel" id="businessPhone" value="+1 (555) 123-4567" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+                                <input type="email" id="businessEmail" value="info@laundryflow.com" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Business Address</label>
+                                <textarea id="businessAddress" rows="3" 
+                                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                          placeholder="Enter business address">123 Main St, Anytown, ST 12345</textarea>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Business Hours</label>
+                                <textarea id="businessHours" rows="2" 
+                                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                          placeholder="Enter business hours">Mon-Fri: 7AM-8PM, Sat-Sun: 8AM-6PM</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Services & Pricing Section -->
+                <div id="services-section" class="settings-section hidden">
+                    <div class="settings-card">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-6">Services & Pricing</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Wash & Fold</h4>
+                                    <p class="text-sm text-gray-600">Basic wash and fold service</p>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <input type="number" value="8.50" step="0.25" 
+                                           class="w-20 px-2 py-1 border border-gray-300 rounded text-center">
+                                    <span class="text-sm text-gray-600">per lb</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Dry Clean</h4>
+                                    <p class="text-sm text-gray-600">Professional dry cleaning</p>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <input type="number" value="15.00" step="0.25" 
+                                           class="w-20 px-2 py-1 border border-gray-300 rounded text-center">
+                                    <span class="text-sm text-gray-600">per item</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Iron Only</h4>
+                                    <p class="text-sm text-gray-600">Pressing and ironing service</p>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <input type="number" value="6.50" step="0.25" 
+                                           class="w-20 px-2 py-1 border border-gray-300 rounded text-center">
+                                    <span class="text-sm text-gray-600">per item</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Wash & Iron</h4>
+                                    <p class="text-sm text-gray-600">Complete wash and press service</p>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <input type="number" value="12.00" step="0.25" 
+                                           class="w-20 px-2 py-1 border border-gray-300 rounded text-center">
+                                    <span class="text-sm text-gray-600">per item</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-6 border-t border-gray-200">
+                            <h4 class="font-medium text-gray-900 mb-4">Additional Services</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <span class="text-sm font-medium">Starch Service</span>
+                                    <input type="number" value="2.50" step="0.25" 
+                                           class="w-16 px-2 py-1 border border-gray-300 rounded text-center text-sm">
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <span class="text-sm font-medium">Stain Removal</span>
+                                    <input type="number" value="5.00" step="0.25" 
+                                           class="w-16 px-2 py-1 border border-gray-300 rounded text-center text-sm">
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <span class="text-sm font-medium">Rush Order</span>
+                                    <input type="number" value="50" step="5" 
+                                           class="w-16 px-2 py-1 border border-gray-300 rounded text-center text-sm">
+                                    <span class="text-xs text-gray-600">%</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <span class="text-sm font-medium">Pickup & Delivery</span>
+                                    <input type="number" value="5.00" step="0.25" 
+                                           class="w-16 px-2 py-1 border border-gray-300 rounded text-center text-sm">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Notifications Section -->
+                <div id="notifications-section" class="settings-section hidden">
+                    <div class="settings-card">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-6">Notification Settings</h3>
+                        <div class="space-y-6">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Order Status Updates</h4>
+                                    <p class="text-sm text-gray-600">Send notifications when order status changes</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Ready for Pickup</h4>
+                                    <p class="text-sm text-gray-600">Notify customers when orders are ready</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">SMS Notifications</h4>
+                                    <p class="text-sm text-gray-600">Send text message notifications</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Email Notifications</h4>
+                                    <p class="text-sm text-gray-600">Send email notifications to customers</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Promotional Messages</h4>
+                                    <p class="text-sm text-gray-600">Send promotional offers and discounts</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-6 border-t border-gray-200">
+                            <h4 class="font-medium text-gray-900 mb-4">Notification Templates</h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Order Ready Template</label>
+                                    <textarea rows="3" 
+                                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                              placeholder="Your order is ready for pickup! Order ID: {ORDER_ID}">Your order is ready for pickup! Order ID: {ORDER_ID}</textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Order Received Template</label>
+                                    <textarea rows="3" 
+                                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                              placeholder="Thank you for your order! We'll notify you when it's ready.">Thank you for your order! We'll notify you when it's ready.</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- User Management Section -->
+                <div id="users-section" class="settings-section hidden">
+                    <div class="settings-card">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-6">User Management</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Admin User</h4>
+                                    <p class="text-sm text-gray-600">admin@laundryflow.com • Administrator</p>
+                                </div>
+                                <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">Edit</button>
+                            </div>
+                            <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Manager User</h4>
+                                    <p class="text-sm text-gray-600">manager@laundryflow.com • Manager</p>
+                                </div>
+                                <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">Edit</button>
+                            </div>
+                            <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Staff User</h4>
+                                    <p class="text-sm text-gray-600">staff@laundryflow.com • Staff</p>
+                                </div>
+                                <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">Edit</button>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-6 border-t border-gray-200">
+                            <button class="btn-primary">+ Add New User</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Backup & Export Section -->
+                <div id="backup-section" class="settings-section hidden">
+                    <div class="settings-card">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-6">Backup & Export</h3>
+                        <div class="space-y-6">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Automatic Backups</h4>
+                                    <p class="text-sm text-gray-600">Create daily automatic backups</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-medium text-gray-900 mb-3">Manual Backup</h4>
+                                <p class="text-sm text-gray-600 mb-4">Create a backup of your current data</p>
+                                <button class="btn-secondary" onclick="createBackup()">Create Backup Now</button>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-medium text-gray-900 mb-3">Export Data</h4>
+                                <p class="text-sm text-gray-600 mb-4">Export your data in various formats</p>
+                                <div class="flex space-x-3">
+                                    <button class="btn-secondary" onclick="exportData('csv')">Export as CSV</button>
+                                    <button class="btn-secondary" onclick="exportData('json')">Export as JSON</button>
+                                    <button class="btn-secondary" onclick="exportData('pdf')">Export as PDF</button>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-medium text-gray-900 mb-3">Import Data</h4>
+                                <p class="text-sm text-gray-600 mb-4">Import data from backup file</p>
+                                <input type="file" id="importFile" accept=".json,.csv" 
+                                       class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- System Preferences Section -->
+                <div id="system-section" class="settings-section hidden">
+                    <div class="settings-card">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-6">System Preferences</h3>
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Default Currency</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="USD">US Dollar (USD)</option>
+                                    <option value="EUR">Euro (EUR)</option>
+                                    <option value="GBP">British Pound (GBP)</option>
+                                    <option value="CAD">Canadian Dollar (CAD)</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Date Format</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                                    <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                                    <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Time Zone</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="EST">Eastern Standard Time</option>
+                                    <option value="CST">Central Standard Time</option>
+                                    <option value="MST">Mountain Standard Time</option>
+                                    <option value="PST">Pacific Standard Time</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Items Per Page</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="10">10 items</option>
+                                    <option value="25">25 items</option>
+                                    <option value="50">50 items</option>
+                                    <option value="100">100 items</option>
+                                </select>
+                            </div>
+                            
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Dark Mode</h4>
+                                    <p class="text-sm text-gray-600">Enable dark theme interface</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Auto-Save</h4>
+                                    <p class="text-sm text-gray-600">Automatically save changes</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center text-sm text-gray-500">
+                <p>&copy; 2024 LaundryFlow. Professional laundry management solutions.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Settings Management
+        class SettingsManager {
+            constructor() {
+                this.currentSection = 'business';
+                this.settings = this.loadSettings();
+                this.initializeSettings();
+            }
+            
+            loadSettings() {
+                // Load from localStorage or use defaults
+                const defaultSettings = {
+                    businessName: 'LaundryFlow',
+                    businessType: 'laundromat',
+                    businessPhone: '+1 (555) 123-4567',
+                    businessEmail: 'info@laundryflow.com',
+                    businessAddress: '123 Main St, Anytown, ST 12345',
+                    businessHours: 'Mon-Fri: 7AM-8PM, Sat-Sun: 8AM-6PM',
+                    notifications: {
+                        orderUpdates: true,
+                        readyForPickup: true,
+                        sms: true,
+                        email: true,
+                        promotional: false
+                    },
+                    system: {
+                        currency: 'USD',
+                        dateFormat: 'MM/DD/YYYY',
+                        timeZone: 'EST',
+                        itemsPerPage: 10,
+                        darkMode: false,
+                        autoSave: true
+                    }
+                };
+                
+                const saved = localStorage.getItem('laundryflow-settings');
+                return saved ? { ...defaultSettings, ...JSON.parse(saved) } : defaultSettings;
+            }
+            
+            saveSettings() {
+                localStorage.setItem('laundryflow-settings', JSON.stringify(this.settings));
+                this.showNotification('Settings saved successfully!', 'success');
+            }
+            
+            initializeSettings() {
+                // Populate form fields with current settings
+                document.getElementById('businessName').value = this.settings.businessName;
+                document.getElementById('businessType').value = this.settings.businessType;
+                document.getElementById('businessPhone').value = this.settings.businessPhone;
+                document.getElementById('businessEmail').value = this.settings.businessEmail;
+                document.getElementById('businessAddress').value = this.settings.businessAddress;
+                document.getElementById('businessHours').value = this.settings.businessHours;
+            }
+            
+            resetSettings() {
+                if (confirm('Are you sure you want to reset all settings to default? This action cannot be undone.')) {
+                    localStorage.removeItem('laundryflow-settings');
+                    location.reload();
+                }
+            }
+            
+            showSection(sectionName) {
+                // Hide all sections
+                document.querySelectorAll('.settings-section').forEach(section => {
+                    section.classList.add('hidden');
+                });
+                
+                // Show selected section
+                document.getElementById(`${sectionName}-section`).classList.remove('hidden');
+                
+                // Update sidebar active state
+                document.querySelectorAll('.sidebar-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                event.target.classList.add('active');
+                
+                this.currentSection = sectionName;
+            }
+            
+            createBackup() {
+                this.showNotification('Creating backup...', 'info');
+                
+                // Simulate backup creation
+                setTimeout(() => {
+                    const backupData = {
+                        timestamp: new Date().toISOString(),
+                        settings: this.settings,
+                        version: '1.0.0'
+                    };
+                    
+                    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `laundryflow-backup-${new Date().toISOString().split('T')[0]}.json`;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    
+                    this.showNotification('Backup created successfully!', 'success');
+                }, 1500);
+            }
+            
+            exportData(format) {
+                this.showNotification(`Exporting data as ${format.toUpperCase()}...`, 'info');
+                
+                setTimeout(() => {
+                    this.showNotification(`Data exported successfully as ${format.toUpperCase()}!`, 'success');
+                }, 1000);
+            }
+            
+            showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `fixed top-4 right-4 px-6 py-3 rounded-md shadow-lg z-50 ${
+                    type === 'success' ? 'bg-green-500 text-white' : 
+                    type === 'error' ? 'bg-red-500 text-white' : 
+                    'bg-blue-500 text-white'
+                }`;
+                notification.textContent = message;
+                
+                document.body.appendChild(notification);
+                
+                // Animate in
+                anime({
+                    targets: notification,
+                    translateX: [300, 0],
+                    opacity: [0, 1],
+                    easing: 'easeOutExpo',
+                    duration: 300
+                });
+                
+                // Remove after 3 seconds
+                setTimeout(() => {
+                    anime({
+                        targets: notification,
+                        translateX: [0, 300],
+                        opacity: [1, 0],
+                        easing: 'easeInExpo',
+                        duration: 300,
+                        complete: () => notification.remove()
+                    });
+                }, 3000);
+            }
+        }
+        
+        // Global variables and functions
+        let settingsManager;
+        
+        function initializeApp() {
+            settingsManager = new SettingsManager();
+        }
+        
+        function showSection(sectionName) {
+            settingsManager.showSection(sectionName);
+        }
+        
+        function saveSettings() {
+            settingsManager.saveSettings();
+        }
+        
+        function resetSettings() {
+            settingsManager.resetSettings();
+        }
+        
+        function createBackup() {
+            settingsManager.createBackup();
+        }
+        
+        function exportData(format) {
+            settingsManager.exportData(format);
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            
+            // Animate settings cards
+            anime({
+                targets: '.settings-card',
+                translateY: [20, 0],
+                opacity: [0, 1],
+                easing: 'easeOutExpo',
+                duration: 600,
+                delay: anime.stagger(150)
+            });
+        });
+    </script>
+</body>
+</html>

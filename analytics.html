@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - LaundryFlow</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Core Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    
+    <!-- Custom Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-navy: #1a365d;
+            --success-green: #38a169;
+            --warning-amber: #d69e2e;
+            --info-blue: #3182ce;
+            --neutral-gray: #718096;
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            min-height: 100vh;
+        }
+        
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        .hero-bg {
+            background: linear-gradient(135deg, var(--primary-navy) 0%, #2d3748 50%, var(--primary-navy) 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            border-left: 4px solid var(--primary-navy);
+            transition: all 0.3s ease;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            margin-bottom: 24px;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, var(--primary-navy) 0%, #2d3748 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(26, 54, 93, 0.2);
+        }
+        
+        .btn-primary {
+            background: var(--primary-navy);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(26, 54, 93, 0.3);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: var(--primary-navy);
+            border: 2px solid var(--primary-navy);
+            padding: 10px 22px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: var(--primary-navy);
+            color: white;
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-2xl font-bold text-gray-900">LaundryFlow</h1>
+                    </div>
+                    <div class="hidden md:block ml-10">
+                        <div class="flex items-baseline space-x-4">
+                            <a href="index.html" class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
+                            <a href="analytics.html" class="text-gray-900 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-blue-600">Analytics</a>
+                            <a href="customers.html" class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Customers</a>
+                            <a href="settings.html" class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Settings</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="btn-secondary text-sm" onclick="exportReport()">Export Report</button>
+                    <button class="btn-primary text-sm" onclick="refreshData()">Refresh Data</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero-bg py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl font-bold text-white mb-4">Business Analytics</h1>
+            <p class="text-xl text-gray-200">Data-driven insights for your laundry operations</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Key Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="metric-card">
+                <div class="text-3xl font-bold mb-2" id="totalRevenue">$0</div>
+                <div class="text-sm text-gray-300">Total Revenue</div>
+                <div class="text-xs text-green-400 mt-1" id="revenueChange">+0% from last month</div>
+            </div>
+            <div class="metric-card">
+                <div class="text-3xl font-bold mb-2" id="totalOrders">0</div>
+                <div class="text-sm text-gray-300">Total Orders</div>
+                <div class="text-xs text-green-400 mt-1" id="ordersChange">+0% from last month</div>
+            </div>
+            <div class="metric-card">
+                <div class="text-3xl font-bold mb-2" id="avgOrderValue">$0</div>
+                <div class="text-sm text-gray-300">Average Order Value</div>
+                <div class="text-xs text-blue-400 mt-1">Per transaction</div>
+            </div>
+            <div class="metric-card">
+                <div class="text-3xl font-bold mb-2" id="customerSatisfaction">4.8</div>
+                <div class="text-sm text-gray-300">Customer Satisfaction</div>
+                <div class="text-xs text-green-400 mt-1">Based on 234 reviews</div>
+            </div>
+        </div>
+
+        <!-- Charts Row 1 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Revenue Trend Chart -->
+            <div class="chart-container">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Revenue Trend</h3>
+                <div id="revenueChart" style="height: 300px;"></div>
+            </div>
+            
+            <!-- Order Status Distribution -->
+            <div class="chart-container">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Order Status Distribution</h3>
+                <div id="statusChart" style="height: 300px;"></div>
+            </div>
+        </div>
+
+        <!-- Charts Row 2 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Service Type Breakdown -->
+            <div class="chart-container">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Service Type Breakdown</h3>
+                <div id="serviceChart" style="height: 300px;"></div>
+            </div>
+            
+            <!-- Daily Volume Trend -->
+            <div class="chart-container">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Daily Volume Trend</h3>
+                <div id="volumeChart" style="height: 300px;"></div>
+            </div>
+        </div>
+
+        <!-- Detailed Analytics -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Top Customers -->
+            <div class="stats-card">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Top Customers</h3>
+                <div class="space-y-3" id="topCustomers">
+                    <!-- Data will be populated by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Popular Services -->
+            <div class="stats-card">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Popular Services</h3>
+                <div class="space-y-3" id="popularServices">
+                    <!-- Data will be populated by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="stats-card">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+                <div class="space-y-3" id="recentActivity">
+                    <!-- Data will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Metrics -->
+        <div class="chart-container mt-8">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Performance Metrics</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-600" id="processingTime">2.3</div>
+                    <div class="text-sm text-gray-600">Avg Processing Time (days)</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600" id="onTimeDelivery">94%</div>
+                    <div class="text-sm text-gray-600">On-Time Delivery Rate</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-orange-600" id="repeatCustomers">78%</div>
+                    <div class="text-sm text-gray-600">Repeat Customer Rate</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center text-sm text-gray-500">
+                <p>&copy; 2024 LaundryFlow. Professional laundry management solutions.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Analytics Data and Charts
+        class AnalyticsManager {
+            constructor() {
+                this.initializeCharts();
+                this.loadAnalyticsData();
+            }
+            
+            initializeCharts() {
+                // Revenue Trend Chart
+                this.revenueChart = echarts.init(document.getElementById('revenueChart'));
+                
+                // Status Distribution Chart
+                this.statusChart = echarts.init(document.getElementById('statusChart'));
+                
+                // Service Type Chart
+                this.serviceChart = echarts.init(document.getElementById('serviceChart'));
+                
+                // Volume Chart
+                this.volumeChart = echarts.init(document.getElementById('volumeChart'));
+            }
+            
+            loadAnalyticsData() {
+                // Sample data - in a real app, this would come from an API
+                const revenueData = this.generateRevenueData();
+                const statusData = this.generateStatusData();
+                const serviceData = this.generateServiceData();
+                const volumeData = this.generateVolumeData();
+                
+                this.updateRevenueChart(revenueData);
+                this.updateStatusChart(statusData);
+                this.updateServiceChart(serviceData);
+                this.updateVolumeChart(volumeData);
+                this.updateMetrics();
+                this.updateDetailedAnalytics();
+            }
+            
+            generateRevenueData() {
+                const dates = [];
+                const revenues = [];
+                
+                for (let i = 29; i >= 0; i--) {
+                    const date = new Date();
+                    date.setDate(date.getDate() - i);
+                    dates.push(date.toISOString().split('T')[0]);
+                    revenues.push(Math.floor(Math.random() * 500) + 200);
+                }
+                
+                return { dates, revenues };
+            }
+            
+            generateStatusData() {
+                return [
+                    { value: 45, name: 'Received' },
+                    { value: 32, name: 'In Progress' },
+                    { value: 28, name: 'Ready' },
+                    { value: 15, name: 'Delivered' }
+                ];
+            }
+            
+            generateServiceData() {
+                return [
+                    { value: 35, name: 'Dry Clean' },
+                    { value: 28, name: 'Wash & Iron' },
+                    { value: 22, name: 'Wash & Fold' },
+                    { value: 15, name: 'Iron Only' }
+                ];
+            }
+            
+            generateVolumeData() {
+                const dates = [];
+                const volumes = [];
+                
+                for (let i = 6; i >= 0; i--) {
+                    const date = new Date();
+                    date.setDate(date.getDate() - i);
+                    dates.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+                    volumes.push(Math.floor(Math.random() * 50) + 20);
+                }
+                
+                return { dates, volumes };
+            }
+            
+            updateRevenueChart(data) {
+                const option = {
+                    tooltip: {
+                        trigger: 'axis',
+                        formatter: function(params) {
+                            return `${params[0].axisValue}<br/>Revenue: $${params[0].value}`;
+                        }
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: data.dates,
+                        axisLabel: {
+                            formatter: function(value) {
+                                return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                            }
+                        }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        axisLabel: {
+                            formatter: '${value}'
+                        }
+                    },
+                    series: [{
+                        data: data.revenues,
+                        type: 'line',
+                        smooth: true,
+                        lineStyle: {
+                            color: '#1a365d',
+                            width: 3
+                        },
+                        areaStyle: {
+                            color: {
+                                type: 'linear',
+                                x: 0,
+                                y: 0,
+                                x2: 0,
+                                y2: 1,
+                                colorStops: [{
+                                    offset: 0, color: 'rgba(26, 54, 93, 0.3)'
+                                }, {
+                                    offset: 1, color: 'rgba(26, 54, 93, 0.05)'
+                                }]
+                            }
+                        }
+                    }]
+                };
+                
+                this.revenueChart.setOption(option);
+            }
+            
+            updateStatusChart(data) {
+                const option = {
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: '{a} <br/>{b}: {c} ({d}%)'
+                    },
+                    series: [{
+                        name: 'Status',
+                        type: 'pie',
+                        radius: '70%',
+                        data: data,
+                        emphasis: {
+                            itemStyle: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        },
+                        color: ['#3182ce', '#d69e2e', '#38a169', '#718096']
+                    }]
+                };
+                
+                this.statusChart.setOption(option);
+            }
+            
+            updateServiceChart(data) {
+                const option = {
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: '{a} <br/>{b}: {c} ({d}%)'
+                    },
+                    series: [{
+                        name: 'Service Type',
+                        type: 'pie',
+                        radius: ['40%', '70%'],
+                        data: data,
+                        emphasis: {
+                            itemStyle: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        },
+                        color: ['#1a365d', '#2d3748', '#4a5568', '#718096']
+                    }]
+                };
+                
+                this.serviceChart.setOption(option);
+            }
+            
+            updateVolumeChart(data) {
+                const option = {
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: data.dates
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    series: [{
+                        data: data.volumes,
+                        type: 'bar',
+                        itemStyle: {
+                            color: '#38a169'
+                        }
+                    }]
+                };
+                
+                this.volumeChart.setOption(option);
+            }
+            
+            updateMetrics() {
+                // Update key metrics
+                document.getElementById('totalRevenue').textContent = '$12,847';
+                document.getElementById('revenueChange').textContent = '+12.5% from last month';
+                
+                document.getElementById('totalOrders').textContent = '1,247';
+                document.getElementById('ordersChange').textContent = '+8.3% from last month';
+                
+                document.getElementById('avgOrderValue').textContent = '$10.30';
+                
+                document.getElementById('customerSatisfaction').textContent = '4.8';
+            }
+            
+            updateDetailedAnalytics() {
+                // Top Customers
+                const topCustomers = [
+                    { name: 'John Smith', orders: 23, revenue: '$287' },
+                    { name: 'Sarah Johnson', orders: 19, revenue: '$245' },
+                    { name: 'Michael Brown', orders: 17, revenue: '$198' },
+                    { name: 'Emily Davis', orders: 15, revenue: '$176' },
+                    { name: 'David Wilson', orders: 12, revenue: '$145' }
+                ];
+                
+                const customersHtml = topCustomers.map(customer => `
+                    <div class="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
+                        <div>
+                            <div class="font-medium text-gray-900">${customer.name}</div>
+                            <div class="text-sm text-gray-500">${customer.orders} orders</div>
+                        </div>
+                        <div class="font-semibold text-gray-900">${customer.revenue}</div>
+                    </div>
+                `).join('');
+                
+                document.getElementById('topCustomers').innerHTML = customersHtml;
+                
+                // Popular Services
+                const popularServices = [
+                    { service: 'Dry Clean', count: 89, percentage: '35%' },
+                    { service: 'Wash & Iron', count: 71, percentage: '28%' },
+                    { service: 'Wash & Fold', count: 56, percentage: '22%' },
+                    { service: 'Iron Only', count: 38, percentage: '15%' }
+                ];
+                
+                const servicesHtml = popularServices.map(service => `
+                    <div class="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
+                        <div>
+                            <div class="font-medium text-gray-900">${service.service}</div>
+                            <div class="text-sm text-gray-500">${service.count} orders</div>
+                        </div>
+                        <div class="font-semibold text-blue-600">${service.percentage}</div>
+                    </div>
+                `).join('');
+                
+                document.getElementById('popularServices').innerHTML = servicesHtml;
+                
+                // Recent Activity
+                const recentActivity = [
+                    { action: 'Order completed', customer: 'John Smith', time: '2 hours ago' },
+                    { action: 'New order received', customer: 'Sarah Johnson', time: '3 hours ago' },
+                    { action: 'Payment processed', customer: 'Michael Brown', time: '5 hours ago' },
+                    { action: 'Order picked up', customer: 'Emily Davis', time: '6 hours ago' },
+                    { action: 'New customer added', customer: 'David Wilson', time: '8 hours ago' }
+                ];
+                
+                const activityHtml = recentActivity.map(activity => `
+                    <div class="flex items-start space-x-3 py-2 border-b border-gray-100 last:border-b-0">
+                        <div class="w-2 h-2 bg-green-400 rounded-full mt-2"></div>
+                        <div class="flex-1">
+                            <div class="text-sm font-medium text-gray-900">${activity.action}</div>
+                            <div class="text-xs text-gray-500">${activity.customer} • ${activity.time}</div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                document.getElementById('recentActivity').innerHTML = activityHtml;
+            }
+        }
+        
+        // Global functions
+        function refreshData() {
+            const analyticsManager = new AnalyticsManager();
+            showNotification('Data refreshed successfully!', 'success');
+        }
+        
+        function exportReport() {
+            showNotification('Generating comprehensive report...', 'info');
+            // In a real app, this would generate and download a PDF report
+            setTimeout(() => {
+                showNotification('Report exported successfully!', 'success');
+            }, 2000);
+        }
+        
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 px-6 py-3 rounded-md shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-500 text-white' : 
+                type === 'error' ? 'bg-red-500 text-white' : 
+                'bg-blue-500 text-white'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            anime({
+                targets: notification,
+                translateX: [300, 0],
+                opacity: [0, 1],
+                easing: 'easeOutExpo',
+                duration: 300
+            });
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                anime({
+                    targets: notification,
+                    translateX: [0, 300],
+                    opacity: [1, 0],
+                    easing: 'easeInExpo',
+                    duration: 300,
+                    complete: () => notification.remove()
+                });
+            }, 3000);
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            new AnalyticsManager();
+            
+            // Animate metric cards
+            anime({
+                targets: '.metric-card',
+                translateY: [20, 0],
+                opacity: [0, 1],
+                easing: 'easeOutExpo',
+                duration: 600,
+                delay: anime.stagger(100)
+            });
+            
+            // Animate chart containers
+            anime({
+                targets: '.chart-container, .stats-card',
+                translateY: [30, 0],
+                opacity: [0, 1],
+                easing: 'easeOutExpo',
+                duration: 800,
+                delay: anime.stagger(150, {start: 300})
+            });
+        });
+    </script>
+</body>
+</html>

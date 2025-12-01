@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaundryFlow - Professional Laundry Management System</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Core Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
+    <script src="https://unpkg.com/splitting@1.0.6/dist/splitting.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/splitting@1.0.6/dist/splitting.css">
+    
+    <!-- Custom Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-navy: #1a365d;
+            --success-green: #38a169;
+            --warning-amber: #d69e2e;
+            --info-blue: #3182ce;
+            --neutral-gray: #718096;
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            min-height: 100vh;
+        }
+        
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        .hero-bg {
+            background: linear-gradient(135deg, var(--primary-navy) 0%, #2d3748 50%, var(--primary-navy) 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .table-row:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-received { background: #bee3f8; color: #2b6cb0; }
+        .status-progress { background: #fed7aa; color: #c05621; }
+        .status-ready { background: #c6f6d5; color: #2f855a; }
+        .status-delivered { background: #e2e8f0; color: #4a5568; }
+        
+        .btn-primary {
+            background: var(--primary-navy);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(26, 54, 93, 0.3);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: var(--primary-navy);
+            border: 2px solid var(--primary-navy);
+            padding: 10px 22px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: var(--primary-navy);
+            color: white;
+            transform: scale(1.02);
+        }
+        
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+        
+        .data-table {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        
+        .table-header {
+            background: var(--primary-navy);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            border-left: 4px solid var(--primary-navy);
+        }
+        
+        .filter-panel {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        }
+        
+        .hero-section {
+            height: 20vh;
+            min-height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-content h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: white;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .hero-content p {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.9);
+            text-align: center;
+        }
+        
+        .splitting .char {
+            animation: fadeInUp 0.6s ease forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .loading-skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-2xl font-bold text-gray-900">LaundryFlow</h1>
+                    </div>
+                    <div class="hidden md:block ml-10">
+                        <div class="flex items-baseline space-x-4">
+                            <a href="index.html" class="text-gray-900 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-blue-600">Dashboard</a>
+                            <a href="analytics.html" class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Analytics</a>
+                            <a href="customers.html" class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Customers</a>
+                            <a href="settings.html" class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Settings</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="btn-secondary text-sm" onclick="exportData()">Export CSV</button>
+                    <button class="btn-primary text-sm" onclick="openAddModal()">+ Add Item</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero-bg hero-section">
+        <div class="hero-content">
+            <h1 data-splitting>Laundry Management System</h1>
+            <p>Streamline your laundry operations with professional efficiency</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            
+            <!-- Filter Panel -->
+            <div class="lg:col-span-1">
+                <div class="filter-panel p-6 sticky top-24">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Filters</h3>
+                    
+                    <!-- Search -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                        <input type="text" id="searchInput" placeholder="Search items..." 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               onkeyup="filterData()">
+                    </div>
+                    
+                    <!-- Status Filter -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="checkbox" class="status-filter" value="received" checked onchange="filterData()">
+                                <span class="ml-2 text-sm text-gray-600">Received</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="status-filter" value="progress" checked onchange="filterData()">
+                                <span class="ml-2 text-sm text-gray-600">In Progress</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="status-filter" value="ready" checked onchange="filterData()">
+                                <span class="ml-2 text-sm text-gray-600">Ready</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="status-filter" value="delivered" onchange="filterData()">
+                                <span class="ml-2 text-sm text-gray-600">Delivered</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Date Filter -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                        <input type="date" id="dateFrom" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2" onchange="filterData()">
+                        <input type="date" id="dateTo" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="filterData()">
+                    </div>
+                    
+                    <!-- Quick Stats -->
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <h4 class="text-sm font-semibold text-gray-900 mb-3">Quick Stats</h4>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Total Items:</span>
+                                <span id="totalItems" class="font-medium">0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">In Progress:</span>
+                                <span id="progressItems" class="font-medium">0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Ready:</span>
+                                <span id="readyItems" class="font-medium">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Table -->
+            <div class="lg:col-span-3">
+                <div class="data-table">
+                    <!-- Table Header -->
+                    <div class="table-header px-6 py-4">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-xl font-semibold">Laundry Items</h2>
+                            <div class="flex space-x-2">
+                                <button onclick="bulkUpdateStatus()" class="text-sm bg-white text-gray-800 px-3 py-1 rounded-md hover:bg-gray-100">Bulk Update</button>
+                                <button onclick="printTags()" class="text-sm bg-white text-gray-800 px-3 py-1 rounded-md hover:bg-gray-100">Print Tags</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Table Content -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortTable('id')">
+                                        ID <span class="font-mono text-xs">↕</span>
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortTable('customer')">
+                                        Customer <span class="font-mono text-xs">↕</span>
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortTable('item')">
+                                        Item <span class="font-mono text-xs">↕</span>
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortTable('service')">
+                                        Service <span class="font-mono text-xs">↕</span>
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortTable('status')">
+                                        Status <span class="font-mono text-xs">↕</span>
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortTable('date')">
+                                        Drop-off <span class="font-mono text-xs">↕</span>
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortTable('ready')">
+                                        Ready Date <span class="font-mono text-xs">↕</span>
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="sortTable('price')">
+                                        Price <span class="font-mono text-xs">↕</span>
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Data will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div class="px-6 py-4 border-t border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-700">
+                                Showing <span id="showingStart">1</span> to <span id="showingEnd">10</span> of <span id="totalRecords">0</span> items
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="changePage(-1)" id="prevBtn" class="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-100 disabled:opacity-50" disabled>Previous</button>
+                                <span id="pageInfo" class="px-3 py-1 text-sm font-medium">Page 1 of 1</span>
+                                <button onclick="changePage(1)" id="nextBtn" class="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-100 disabled:opacity-50" disabled>Next</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Item Modal -->
+    <div id="addModal" class="fixed inset-0 modal-overlay hidden z-50">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Add New Laundry Item</h3>
+                </div>
+                <form id="addForm" class="px-6 py-4">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Customer Name *</label>
+                            <input type="text" id="customerName" required 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Enter customer name">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Item Type *</label>
+                            <select id="itemType" required 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Select item type</option>
+                                <option value="Shirt">Shirt</option>
+                                <option value="Pants">Pants</option>
+                                <option value="Dress">Dress</option>
+                                <option value="Jacket">Jacket</option>
+                                <option value="Suit">Suit</option>
+                                <option value="Coat">Coat</option>
+                                <option value="Skirt">Skirt</option>
+                                <option value="Blouse">Blouse</option>
+                                <option value="Tie">Tie</option>
+                                <option value="Scarf">Scarf</option>
+                                <option value="Sweater">Sweater</option>
+                                <option value="Jeans">Jeans</option>
+                                <option value="Shorts">Shorts</option>
+                                <option value="Underwear">Underwear</option>
+                                <option value="Socks">Socks</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Service Type *</label>
+                            <select id="serviceType" required 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Select service type</option>
+                                <option value="Wash & Fold">Wash & Fold</option>
+                                <option value="Dry Clean">Dry Clean</option>
+                                <option value="Iron Only">Iron Only</option>
+                                <option value="Wash & Iron">Wash & Iron</option>
+                                <option value="Starch">Starch</option>
+                                <option value="Delicate Wash">Delicate Wash</option>
+                                <option value="Stain Removal">Stain Removal</option>
+                                <option value="Alterations">Alterations</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Special Instructions</label>
+                            <textarea id="specialInstructions" rows="3" 
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                      placeholder="Any special care instructions..."></textarea>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="priorityOrder" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                            <label for="priorityOrder" class="ml-2 block text-sm text-gray-700">Rush order (extra charge)</label>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-6">
+                        <button type="button" onclick="closeAddModal()" 
+                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">
+                            Cancel
+                        </button>
+                        <button type="submit" 
+                                class="btn-primary text-sm">
+                            Add Item
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center text-sm text-gray-500">
+                <p>&copy; 2024 LaundryFlow. Professional laundry management solutions.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="main.js"></script>
+    
+    <script>
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            
+            // Initialize text splitting animation
+            Splitting();
+            
+            // Animate hero text
+            anime({
+                targets: '.splitting .char',
+                translateY: [20, 0],
+                opacity: [0, 1],
+                easing: 'easeOutExpo',
+                duration: 600,
+                delay: anime.stagger(50)
+            });
+        });
+    </script>
+</body>
+</html>

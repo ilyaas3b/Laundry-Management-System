@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customers - LaundryFlow</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Core Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    
+    <!-- Custom Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-navy: #1a365d;
+            --success-green: #38a169;
+            --warning-amber: #d69e2e;
+            --info-blue: #3182ce;
+            --neutral-gray: #718096;
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            min-height: 100vh;
+        }
+        
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        .hero-bg {
+            background: linear-gradient(135deg, var(--primary-navy) 0%, #2d3748 50%, var(--primary-navy) 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .customer-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--primary-navy);
+        }
+        
+        .customer-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary {
+            background: var(--primary-navy);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(26, 54, 93, 0.3);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: var(--primary-navy);
+            border: 2px solid var(--primary-navy);
+            padding: 10px 22px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: var(--primary-navy);
+            color: white;
+            transform: scale(1.02);
+        }
+        
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+        
+        .loyalty-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .loyalty-bronze { background: #cd7f32; color: white; }
+        .loyalty-silver { background: #c0c0c0; color: #2d3748; }
+        .loyalty-gold { background: #ffd700; color: #2d3748; }
+        .loyalty-platinum { background: #e5e4e2; color: #2d3748; }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-2xl font-bold text-gray-900">LaundryFlow</h1>
+                    </div>
+                    <div class="hidden md:block ml-10">
+                        <div class="flex items-baseline space-x-4">
+                            <a href="index.html" class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
+                            <a href="analytics.html" class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Analytics</a>
+                            <a href="customers.html" class="text-gray-900 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-blue-600">Customers</a>
+                            <a href="settings.html" class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Settings</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="btn-secondary text-sm" onclick="exportCustomerData()">Export Data</button>
+                    <button class="btn-primary text-sm" onclick="openAddCustomerModal()">+ Add Customer</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero-bg py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl font-bold text-white mb-4">Customer Management</h1>
+            <p class="text-xl text-gray-200">Build strong relationships with your customers</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Search and Filter -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1">
+                    <input type="text" id="customerSearch" placeholder="Search customers..." 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           onkeyup="filterCustomers()">
+                </div>
+                <div class="flex gap-2">
+                    <select id="loyaltyFilter" onchange="filterCustomers()" 
+                            class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Loyalty Levels</option>
+                        <option value="bronze">Bronze</option>
+                        <option value="silver">Silver</option>
+                        <option value="gold">Gold</option>
+                        <option value="platinum">Platinum</option>
+                    </select>
+                    <select id="statusFilter" onchange="filterCustomers()" 
+                            class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="new">New</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="customer-card text-center">
+                <div class="text-3xl font-bold text-blue-600 mb-2" id="totalCustomers">0</div>
+                <div class="text-sm text-gray-600">Total Customers</div>
+            </div>
+            <div class="customer-card text-center">
+                <div class="text-3xl font-bold text-green-600 mb-2" id="activeCustomers">0</div>
+                <div class="text-sm text-gray-600">Active Customers</div>
+            </div>
+            <div class="customer-card text-center">
+                <div class="text-3xl font-bold text-yellow-600 mb-2" id="newCustomers">0</div>
+                <div class="text-sm text-gray-600">New This Month</div>
+            </div>
+            <div class="customer-card text-center">
+                <div class="text-3xl font-bold text-purple-600 mb-2" id="avgOrderValue">$0</div>
+                <div class="text-sm text-gray-600">Avg Order Value</div>
+            </div>
+        </div>
+
+        <!-- Customer Grid -->
+        <div id="customerGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Customer cards will be populated by JavaScript -->
+        </div>
+
+        <!-- Customer Details Modal -->
+        <div id="customerModal" class="fixed inset-0 modal-overlay hidden z-50">
+            <div class="flex items-center justify-center min-h-screen px-4">
+                <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-semibold text-gray-900">Customer Details</h3>
+                            <button onclick="closeCustomerModal()" class="text-gray-400 hover:text-gray-600">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="customerModalContent" class="px-6 py-4">
+                        <!-- Content will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Customer Modal -->
+        <div id="addCustomerModal" class="fixed inset-0 modal-overlay hidden z-50">
+            <div class="flex items-center justify-center min-h-screen px-4">
+                <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900">Add New Customer</h3>
+                    </div>
+                    <form id="addCustomerForm" class="px-6 py-4">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                                <input type="text" id="customerFullName" required 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                       placeholder="Enter full name">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                                <input type="email" id="customerEmail" required 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                       placeholder="Enter email address">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Phone *</label>
+                                <input type="tel" id="customerPhone" required 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                       placeholder="Enter phone number">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                                <textarea id="customerAddress" rows="3" 
+                                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                          placeholder="Enter address"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Preferences</label>
+                                <textarea id="customerPreferences" rows="2" 
+                                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                          placeholder="Special preferences or notes..."></textarea>
+                            </div>
+                        </div>
+                        <div class="flex justify-end space-x-3 mt-6">
+                            <button type="button" onclick="closeAddCustomerModal()" 
+                                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn-primary text-sm">
+                                Add Customer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center text-sm text-gray-500">
+                <p>&copy; 2024 LaundryFlow. Professional laundry management solutions.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Customer Management System
+        class CustomerManager {
+            constructor() {
+                this.customers = [];
+                this.filteredCustomers = [];
+                this.initSampleData();
+                this.bindEvents();
+            }
+            
+            initSampleData() {
+                this.customers = [
+                    {
+                        id: 'C001',
+                        name: 'John Smith',
+                        email: 'john.smith@email.com',
+                        phone: '+1 (555) 123-4567',
+                        address: '123 Main St, Anytown, ST 12345',
+                        loyaltyLevel: 'gold',
+                        status: 'active',
+                        joinDate: '2024-01-15',
+                        totalOrders: 23,
+                        totalSpent: 287.50,
+                        lastOrder: '2024-12-01',
+                        preferences: 'Light starch on shirts, prefers pickup after 5 PM'
+                    },
+                    {
+                        id: 'C002',
+                        name: 'Sarah Johnson',
+                        email: 'sarah.johnson@email.com',
+                        phone: '+1 (555) 234-5678',
+                        address: '456 Oak Ave, Somewhere, ST 23456',
+                        loyaltyLevel: 'platinum',
+                        status: 'active',
+                        joinDate: '2023-11-08',
+                        totalOrders: 19,
+                        totalSpent: 245.00,
+                        lastOrder: '2024-11-30',
+                        preferences: 'Delicate wash for dresses, eco-friendly detergents'
+                    },
+                    {
+                        id: 'C003',
+                        name: 'Michael Brown',
+                        email: 'michael.brown@email.com',
+                        phone: '+1 (555) 345-6789',
+                        address: '789 Pine Rd, Elsewhere, ST 34567',
+                        loyaltyLevel: 'silver',
+                        status: 'active',
+                        joinDate: '2024-03-22',
+                        totalOrders: 17,
+                        totalSpent: 198.00,
+                        lastOrder: '2024-11-29',
+                        preferences: 'Heavy starch on business shirts'
+                    },
+                    {
+                        id: 'C004',
+                        name: 'Emily Davis',
+                        email: 'emily.davis@email.com',
+                        phone: '+1 (555) 456-7890',
+                        address: '321 Elm St, Nowhere, ST 45678',
+                        loyaltyLevel: 'bronze',
+                        status: 'new',
+                        joinDate: '2024-11-15',
+                        totalOrders: 3,
+                        totalSpent: 45.50,
+                        lastOrder: '2024-11-28',
+                        preferences: 'Prefers text message notifications'
+                    },
+                    {
+                        id: 'C005',
+                        name: 'David Wilson',
+                        email: 'david.wilson@email.com',
+                        phone: '+1 (555) 567-8901',
+                        address: '654 Maple Dr, Anywhere, ST 56789',
+                        loyaltyLevel: 'gold',
+                        status: 'active',
+                        joinDate: '2024-02-10',
+                        totalOrders: 15,
+                        totalSpent: 176.25,
+                        lastOrder: '2024-11-27',
+                        preferences: 'Same-day service when possible'
+                    },
+                    {
+                        id: 'C006',
+                        name: 'Lisa Anderson',
+                        email: 'lisa.anderson@email.com',
+                        phone: '+1 (555) 678-9012',
+                        address: '987 Cedar Ln, Someplace, ST 67890',
+                        loyaltyLevel: 'silver',
+                        status: 'active',
+                        joinDate: '2023-12-05',
+                        totalOrders: 21,
+                        totalSpent: 267.75,
+                        lastOrder: '2024-11-26',
+                        preferences: 'No fabric softener, hypoallergenic detergent'
+                    }
+                ];
+                
+                this.filteredCustomers = [...this.customers];
+                this.updateDisplay();
+            }
+            
+            bindEvents() {
+                document.getElementById('addCustomerForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.addCustomer();
+                });
+            }
+            
+            generateId() {
+                const lastId = this.customers.length > 0 ? 
+                    Math.max(...this.customers.map(c => parseInt(c.id.replace('C', '')))) : 0;
+                return `C${String(lastId + 1).padStart(3, '0')}`;
+            }
+            
+            addCustomer() {
+                const name = document.getElementById('customerFullName').value;
+                const email = document.getElementById('customerEmail').value;
+                const phone = document.getElementById('customerPhone').value;
+                const address = document.getElementById('customerAddress').value;
+                const preferences = document.getElementById('customerPreferences').value;
+                
+                if (!name || !email || !phone) {
+                    this.showNotification('Please fill in all required fields.', 'error');
+                    return;
+                }
+                
+                const newCustomer = {
+                    id: this.generateId(),
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    address: address,
+                    loyaltyLevel: 'bronze',
+                    status: 'new',
+                    joinDate: new Date().toISOString().split('T')[0],
+                    totalOrders: 0,
+                    totalSpent: 0,
+                    lastOrder: null,
+                    preferences: preferences
+                };
+                
+                this.customers.unshift(newCustomer);
+                this.filterCustomers();
+                this.closeAddCustomerModal();
+                
+                this.showNotification('Customer added successfully!', 'success');
+                document.getElementById('addCustomerForm').reset();
+            }
+            
+            updateDisplay() {
+                this.updateStats();
+                this.renderCustomerGrid();
+            }
+            
+            updateStats() {
+                const total = this.customers.length;
+                const active = this.customers.filter(c => c.status === 'active').length;
+                const newThisMonth = this.customers.filter(c => {
+                    const joinDate = new Date(c.joinDate);
+                    const thisMonth = new Date();
+                    return joinDate.getMonth() === thisMonth.getMonth() && 
+                           joinDate.getFullYear() === thisMonth.getFullYear();
+                }).length;
+                const avgOrderValue = this.customers.reduce((sum, c) => sum + c.totalSpent, 0) / total;
+                
+                document.getElementById('totalCustomers').textContent = total;
+                document.getElementById('activeCustomers').textContent = active;
+                document.getElementById('newCustomers').textContent = newThisMonth;
+                document.getElementById('avgOrderValue').textContent = `$${avgOrderValue.toFixed(2)}`;
+            }
+            
+            renderCustomerGrid() {
+                const grid = document.getElementById('customerGrid');
+                grid.innerHTML = '';
+                
+                this.filteredCustomers.forEach(customer => {
+                    const card = this.createCustomerCard(customer);
+                    grid.appendChild(card);
+                });
+                
+                // Animate cards
+                anime({
+                    targets: '.customer-card',
+                    translateY: [20, 0],
+                    opacity: [0, 1],
+                    easing: 'easeOutExpo',
+                    duration: 600,
+                    delay: anime.stagger(100)
+                });
+            }
+            
+            createCustomerCard(customer) {
+                const card = document.createElement('div');
+                card.className = 'customer-card';
+                
+                const loyaltyColors = {
+                    bronze: 'loyalty-bronze',
+                    silver: 'loyalty-silver',
+                    gold: 'loyalty-gold',
+                    platinum: 'loyalty-platinum'
+                };
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">${customer.name}</h3>
+                            <p class="text-sm text-gray-600">${customer.email}</p>
+                        </div>
+                        <span class="loyalty-badge ${loyaltyColors[customer.loyaltyLevel]}">${customer.loyaltyLevel}</span>
+                    </div>
+                    
+                    <div class="space-y-2 mb-4">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Total Orders:</span>
+                            <span class="font-medium">${customer.totalOrders}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Total Spent:</span>
+                            <span class="font-medium">$${customer.totalSpent.toFixed(2)}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Last Order:</span>
+                            <span class="font-medium">${customer.lastOrder ? this.formatDate(customer.lastOrder) : 'N/A'}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Status:</span>
+                            <span class="font-medium capitalize">${customer.status}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-2">
+                        <button onclick="viewCustomerDetails('${customer.id}')" 
+                                class="flex-1 bg-blue-600 text-white px-3 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors">
+                            View Details
+                        </button>
+                        <button onclick="sendNotification('${customer.id}')" 
+                                class="flex-1 bg-green-600 text-white px-3 py-2 rounded-md text-sm hover:bg-green-700 transition-colors">
+                            Contact
+                        </button>
+                    </div>
+                `;
+                
+                return card;
+            }
+            
+            formatDate(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+            }
+            
+            filterCustomers() {
+                const searchTerm = document.getElementById('customerSearch').value.toLowerCase();
+                const loyaltyFilter = document.getElementById('loyaltyFilter').value;
+                const statusFilter = document.getElementById('statusFilter').value;
+                
+                this.filteredCustomers = this.customers.filter(customer => {
+                    const matchesSearch = !searchTerm || 
+                        customer.name.toLowerCase().includes(searchTerm) ||
+                        customer.email.toLowerCase().includes(searchTerm) ||
+                        customer.phone.includes(searchTerm);
+                    
+                    const matchesLoyalty = !loyaltyFilter || customer.loyaltyLevel === loyaltyFilter;
+                    const matchesStatus = !statusFilter || customer.status === statusFilter;
+                    
+                    return matchesSearch && matchesLoyalty && matchesStatus;
+                });
+                
+                this.renderCustomerGrid();
+            }
+            
+            getCustomerById(id) {
+                return this.customers.find(customer => customer.id === id);
+            }
+            
+            showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `fixed top-4 right-4 px-6 py-3 rounded-md shadow-lg z-50 ${
+                    type === 'success' ? 'bg-green-500 text-white' : 
+                    type === 'error' ? 'bg-red-500 text-white' : 
+                    'bg-blue-500 text-white'
+                }`;
+                notification.textContent = message;
+                
+                document.body.appendChild(notification);
+                
+                // Animate in
+                anime({
+                    targets: notification,
+                    translateX: [300, 0],
+                    opacity: [0, 1],
+                    easing: 'easeOutExpo',
+                    duration: 300
+                });
+                
+                // Remove after 3 seconds
+                setTimeout(() => {
+                    anime({
+                        targets: notification,
+                        translateX: [0, 300],
+                        opacity: [1, 0],
+                        easing: 'easeInExpo',
+                        duration: 300,
+                        complete: () => notification.remove()
+                    });
+                }, 3000);
+            }
+            
+            closeAddCustomerModal() {
+                document.getElementById('addCustomerModal').classList.add('hidden');
+            }
+        }
+        
+        // Global variables and functions
+        let customerManager;
+        
+        function initializeApp() {
+            customerManager = new CustomerManager();
+        }
+        
+        function filterCustomers() {
+            customerManager.filterCustomers();
+        }
+        
+        function openAddCustomerModal() {
+            document.getElementById('addCustomerModal').classList.remove('hidden');
+        }
+        
+        function closeAddCustomerModal() {
+            customerManager.closeAddCustomerModal();
+        }
+        
+        function viewCustomerDetails(id) {
+            const customer = customerManager.getCustomerById(id);
+            if (!customer) return;
+            
+            const modalContent = document.getElementById('customerModalContent');
+            modalContent.innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                            <span class="text-2xl font-bold text-blue-600">${customer.name.charAt(0)}</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-900">${customer.name}</h3>
+                            <span class="loyalty-badge loyalty-${customer.loyaltyLevel}">${customer.loyaltyLevel}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h4 class="font-medium text-gray-900 mb-2">Contact Information</h4>
+                            <div class="space-y-2 text-sm">
+                                <div><strong>Email:</strong> ${customer.email}</div>
+                                <div><strong>Phone:</strong> ${customer.phone}</div>
+                                <div><strong>Address:</strong> ${customer.address}</div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-900 mb-2">Customer Statistics</h4>
+                            <div class="space-y-2 text-sm">
+                                <div><strong>Total Orders:</strong> ${customer.totalOrders}</div>
+                                <div><strong>Total Spent:</strong> $${customer.totalSpent.toFixed(2)}</div>
+                                <div><strong>Join Date:</strong> ${customerManager.formatDate(customer.joinDate)}</div>
+                                <div><strong>Last Order:</strong> ${customer.lastOrder ? customerManager.formatDate(customer.lastOrder) : 'N/A'}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-medium text-gray-900 mb-2">Preferences & Notes</h4>
+                        <p class="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">${customer.preferences || 'No special preferences noted.'}</p>
+                    </div>
+                    
+                    <div class="flex space-x-3 pt-4 border-t border-gray-200">
+                        <button onclick="editCustomer('${customer.id}')" 
+                                class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors">
+                            Edit Customer
+                        </button>
+                        <button onclick="sendNotification('${customer.id}')" 
+                                class="flex-1 bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700 transition-colors">
+                            Send Message
+                        </button>
+                        <button onclick="viewOrderHistory('${customer.id}')" 
+                                class="flex-1 bg-gray-600 text-white px-4 py-2 rounded-md text-sm hover:bg-gray-700 transition-colors">
+                            Order History
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('customerModal').classList.remove('hidden');
+        }
+        
+        function closeCustomerModal() {
+            document.getElementById('customerModal').classList.add('hidden');
+        }
+        
+        function sendNotification(id) {
+            const customer = customerManager.getCustomerById(id);
+            customerManager.showNotification(`Message sent to ${customer.name}`, 'success');
+        }
+        
+        function editCustomer(id) {
+            customerManager.showNotification('Edit customer functionality would open a form', 'info');
+        }
+        
+        function viewOrderHistory(id) {
+            customerManager.showNotification('Order history would be displayed', 'info');
+        }
+        
+        function exportCustomerData() {
+            customerManager.showNotification('Customer data exported successfully!', 'success');
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            
+            // Animate customer cards
+            anime({
+                targets: '.customer-card',
+                translateY: [20, 0],
+                opacity: [0, 1],
+                easing: 'easeOutExpo',
+                duration: 600,
+                delay: anime.stagger(100)
+            });
+        });
+    </script>
+</body>
+</html>
